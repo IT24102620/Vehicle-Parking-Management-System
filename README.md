@@ -148,9 +148,6 @@ The project initializes a default admin account automatically.
 - Some DAO classes currently use absolute local file paths, so if the project is moved to another machine, those paths may need to be updated.
 - The project is intended for learning and academic demonstration of Java OOP, servlet-based web development, and file-based data management.
 
-## License
-
-This project is provided for educational and academic use.
 
 ## Contributing
 
