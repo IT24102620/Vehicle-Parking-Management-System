@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebContextManager">
+    <option name="state">
+      <map>
+        <entry key="file://$PROJECT_DIR$/Parklot Final/src/main/webapp/AdminBooking.html" value="file://$PROJECT_DIR$/Parklot Final/src/main/webapp" />
+        <entry key="file://$PROJECT_DIR$/Parklot Final/src/main/webapp/AvailabilityAdmin.html" value="file://$PROJECT_DIR$/Parklot Final/src/main/webapp" />
+        <entry key="file://$PROJECT_DIR$/Parklot Final/src/main/webapp/AvailabilityUser.html" value="file://$PROJECT_DIR$/Parklot Final/src/main/webapp" />
+        <entry key="file://$PROJECT_DIR$/Parklot Final/src/main/webapp/AvailabiltyAdmin.html" value="file://$PROJECT_DIR$/Parklot Final/src/main/webapp" />
+        <entry key="file://$PROJECT_DIR$/Parklot Final/src/main/webapp/UserBooking.html" value="file://$PROJECT_DIR$/Parklot Final/src/main/webapp" />
+        <entry key="file://$PROJECT_DIR$/Parklot Final/src/main/webapp/UserBooking.jsp" value="file://$PROJECT_DIR$/Parklot Final/src/main/webapp" />
+        <entry key="file://$PROJECT_DIR$/Parklot Final/src/main/webapp/VehiclesAdminView.html" value="file://$PROJECT_DIR$/Parklot Final/src/main/webapp" />
+        <entry key="file://$PROJECT_DIR$/Parklot Final/src/main/webapp/booking.jsp" value="file://$PROJECT_DIR$/Parklot Final/src/main/webapp" />
+        <entry key="file://$PROJECT_DIR$/Parklot Final/src/main/webapp/feedback_list.jsp" value="file://$PROJECT_DIR$/Parklot Final/src/main/webapp" />
+        <entry key="file://$PROJECT_DIR$/Parklot Final/src/main/webapp/footer.jsp" value="file://$PROJECT_DIR$/Parklot Final/src/main/webapp" />
+        <entry key="file://$PROJECT_DIR$/Parklot Final/src/main/webapp/index.html" value="file://$PROJECT_DIR$/Parklot Final/src/main/webapp" />
+        <entry key="file://$PROJECT_DIR$/Parklot Final/src/main/webapp/index.jsp" value="file://$PROJECT_DIR$/Parklot Final/src/main/webapp" />
+        <entry key="file://$PROJECT_DIR$/Parklot Final/src/main/webapp/login.html" value="file://$PROJECT_DIR$/Parklot Final/src/main/webapp" />
+        <entry key="file://$PROJECT_DIR$/Parklot Final/src/main/webapp/registerVehicle.jsp" value="file://$PROJECT_DIR$/Parklot Final/src/main/webapp" />
+        <entry key="file://$PROJECT_DIR$/Parklot Final/src/main/webapp/userbooking.html" value="file://$PROJECT_DIR$/Parklot Final/src/main/webapp" />
+        <entry key="file://$PROJECT_DIR$/Parklot Final/src/main/webapp/userbooking.jsp" value="file://$PROJECT_DIR$/Parklot Final/src/main/webapp" />
+      </map>
+    </option>
+  </component>
+</project>

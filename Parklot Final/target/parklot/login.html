@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="_csrf" content="${_csrf.token}" id="csrfToken" />
+  <meta name="_csrf_header" content="${_csrf.headerName}" />
+  <title>Parklot - Login</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link href="https://fonts.googleapis.com/css2?family=Kaushan+Script&family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="preload" href="https://images.unsplash.com/photo-1610647752706-3bb12232b3ab?q=80&w=1450&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" as="image">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      scroll-behavior: smooth;
+    }
+    body, html {
+      font-family: 'Poppins', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+    }
+
+    :root {
+      --navbar-height: 80px;
+    }
+
+    /* Background Slideshow */
+    #background-slideshow {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      overflow: hidden;
+      isolation: isolate;
+    }
+    .bg-image {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-size: cover;
+      background-position: center;
+      opacity: 0;
+      transform: scale(1.2) rotate(0.5deg);
+      transition: opacity 3s ease, transform 3s ease;
+      filter: brightness(0.9);
+      will-change: opacity, transform;
+    }
+    .bg-image.active {
+      opacity: 1;
+      transform: scale(1) rotate(0deg);
+    }
+    .bg-image::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle, transparent, rgba(0, 0, 0, 0.3));
+      opacity: 0.7;
+    }
+    .sparkle {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      background: radial-gradient(circle, rgba(255, 215, 0, 0.9), transparent);
+      border-radius: 50%;
+      pointer-events: none;
+      animation: sparkleFade 1s ease forwards;
+    }
+    @keyframes sparkleFade {
+      0% { opacity: 1; transform: scale(1); }
+      100% { opacity: 0; transform: scale(1.5) translateY(-30px); }
+    }
+
+    /* Preloader */
+    #preloader {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(45deg, #EFCA29, #00D2FA, #972826);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      transition: opacity 0.8s ease;
+    }
+    #preloader.hide {
+      opacity: 0;
+      pointer-events: none;
+    }
+    .loader {
+      width: 80px;
+      height: 80px;
+      border: 10px solid #fff;
+      border-top: 10px solid #EFCA29;
+      border-radius: 50%;
+      animation: spin 1.2s linear infinite, pulseGlow 2s infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 10px rgba(239, 202, 41, 0.5); }
+      50% { box-shadow: 0 0 30px rgba(239, 202, 41, 1); }
+    }
+
+    /* Navbar */
+    nav {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      height: var(--navbar-height);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: linear-gradient(45deg, #6B46C1, #ED64A6, #F6E05E);
+      backdrop-filter: blur(10px);
+      padding: 15px 40px;
+      z-index: 1000;
+      transition: all 0.5s ease;
+    }
+    nav.scrolled {
+      background: linear-gradient(45deg, #805AD5, #F687B3, #FBBF24);
+      padding: 10px 40px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+    .nav-left, .nav-right {
+      display: flex;
+      align-items: center;
+    }
+    .nav-left a, .nav-right a {
+      color: #fff;
+      text-decoration: none;
+      margin: 0 25px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+    .nav-left a:hover, .nav-right a:hover {
+      color: #FFE4E1;
+      transform: translateY(-2px);
+      text-shadow: 0 0 15px rgba(255, 228, 225, 0.8);
+    }
+    .nav-left a::after, .nav-right a:hover::after {
+      content: '';
+      position: absolute;
+      width: 0;
+      height: 2px;
+      bottom: -6px;
+      left: 0;
+      background: #FFE4E1;
+      transition: width 0.4s ease;
+    }
+    .nav-left a:hover::after, .nav-right a:hover::after {
+      width: 100%;
+    }
+    .logo img {
+      width: 60px;
+      transition: transform 0.6s ease;
+      filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.5));
+    }
+    .logo img:hover {
+      transform: rotate(360deg) scale(1.3);
+    }
+
+    /* Special Buttons */
+    .nav-right a#signup-btn, .nav-right a#signin-btn {
+      background: linear-gradient(45deg, #ED64A6, #F6E05E);
+      padding: 12px 25px;
+      border-radius: 30px;
+      color: #1A1A15;
+      font-weight: 700;
+      box-shadow: 0 4px 15px rgba(237, 100, 166, 0.5);
+      transition: all 0.4s ease;
+      margin: 0 15px;
+    }
+    .nav-right a#signup-btn:hover, .nav-right a#signin-btn:hover {
+      background: linear-gradient(45deg, #F6E05E, #ED64A6);
+      transform: translateY(-4px) scale(1.1);
+      box-shadow: 0 8px 25px rgba(237, 100, 166, 0.8);
+    }
+    .nav-right a#signup-btn {
+      animation: pulse 2.5s infinite;
+    }
+    .nav-right a#signin-btn {
+      background: linear-gradient(45deg, #6B46C1, #ED64A6);
+    }
+    .nav-right a#signin-btn:hover {
+      background: linear-gradient(45deg, #ED64A6, #6B46C1);
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); box-shadow: 0 4px 15px rgba(237, 100, 166, 0.5); }
+      50% { transform: scale(1.05); box-shadow: 0 6px 25px rgba(237, 100, 166, 0.8); }
+      100% { transform: scale(1); box-shadow: 0 4px 15px rgba(237, 100, 166, 0.5); }
+    }
+
+    /* Main Content */
+    .main-content {
+      flex: 1 0 auto;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding-top: calc(var(--navbar-height) + 20px);
+      padding-bottom: 20px;
+      padding-left: 20px;
+      padding-right: 20px;
+      min-height: calc(100vh - var(--navbar-height));
+    }
+
+    /* Login Container */
+    .login-container {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      padding: 40px;
+      border-radius: 20px;
+      width: 90%;
+      max-width: 400px;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      animation: bounceIn 1s ease forwards;
+      z-index: 10;
+    }
+    @keyframes bounceIn {
+      0% { opacity: 0; transform: scale(0.8); }
+      60% { opacity: 1; transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+    .login-container h2 {
+      font-size: 32px;
+      font-weight: 700;
+      color: #F6E05E;
+      margin-bottom: 30px;
+      text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5);
+      font-family: 'Kaushan Script', sans-serif;
+    }
+    .message {
+      margin-bottom: 20px;
+      padding: 10px;
+      border-radius: 5px;
+      font-size: 14px;
+      text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3);
+    }
+    .message.success {
+      background: rgba(0, 255, 0, 0.2);
+      color: #0f0;
+    }
+    .message.error {
+      background: rgba(255, 0, 0, 0.2);
+      color: #f00;
+    }
+    .input-group {
+      margin-bottom: 25px;
+      text-align: left;
+      opacity: 0;
+      animation: fadeInUp 0.6s ease forwards;
+      animation-delay: calc(0.2s * var(--i));
+    }
+    @keyframes fadeInUp {
+      0% { opacity: 0; transform: translateY(20px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    .input-group label {
+      font-size: 16px;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 10px;
+      display: block;
+      text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3);
+    }
+    .input-group input {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      background: #fff;
+      color: #1A1A15;
+      font-size: 16px;
+      transition: all 0.3s ease;
+      box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    .input-group input:focus {
+      outline: none;
+      box-shadow: 0 0 10px rgba(237, 100, 166, 0.5);
+    }
+    .input-group input::placeholder {
+      color: rgba(26, 26, 21, 0.7);
+    }
+    .input-group.relative {
+      position: relative;
+    }
+    .toggle-password {
+      position: absolute;
+      right: 12px;
+      top: 73%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+    }
+    .toggle-password img {
+      width: 20px;
+      height: 20px;
+      transition: opacity 0.3s ease;
+    }
+    .toggle-password img:hover {
+      opacity: 0.7;
+    }
+    input[type="password"] {
+      padding-right: 45px;
+    }
+    .login-btn {
+      width: 100%;
+      padding: 15px;
+      background: linear-gradient(45deg, #ED64A6, #F6E05E);
+      color: #1A1A15;
+      border: none;
+      border-radius: 50px;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.4s ease;
+      box-shadow: 0 5px 15px rgba(237, 100, 166, 0.5);
+      position: relative;
+      overflow: hidden;
+    }
+    .login-btn:hover {
+      background: linear-gradient(45deg, #F6E05E, #ED64A6);
+      transform: scale(1.05);
+      box-shadow: 0 8px 20px rgba(237, 100, 166, 0.7);
+    }
+    .login-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+      transition: 0.6s;
+    }
+    .login-btn:hover::before {
+      left: 100%;
+    }
+    .login-btn:disabled {
+      background: linear-gradient(45deg, #aaa, #ccc);
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    .login-btn .spinner {
+      display: none;
+      width: 20px;
+      height: 20px;
+      border: 3px solid #1A1A15;
+      border-top: 3px solid transparent;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+    }
+    .login-btn.loading .spinner {
+      display: block;
+    }
+    .login-btn.loading span {
+      visibility: hidden;
+    }
+    .signup-link, .admin-hint {
+      margin-top: 20px;
+      font-size: 14px;
+      color: #fff;
+      text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3);
+    }
+    .signup-link a {
+      color: #F6E05E;
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.3s ease;
+    }
+    .signup-link a:hover {
+      color: #ED64A6;
+      text-shadow: 0 0 5px rgba(237, 100, 166, 0.8);
+    }
+
+    /* Footer */
+    .footer {
+      padding: 40px 20px;
+      background: linear-gradient(45deg, #6B46C1, #ED64A6, #F6E05E);
+      position: relative;
+      overflow: hidden;
+      border-radius: 15px;
+      backdrop-filter: blur(12px);
+    }
+    .footer::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle, rgba(237, 100, 166, 0.2), transparent);
+      opacity: 0;
+      transition: opacity 0.6s ease;
+    }
+    .footer:hover::before {
+      opacity: 1;
+    }
+    .footer-container {
+      max-width: 1300px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-around;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    .footer-column h3 {
+      font-size: 20px;
+      font-family: 'Kaushan Script', sans-serif;
+      color: #F6E05E;
+      margin-bottom: 15px;
+      text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5);
+    }
+    .footer-column p, .footer-column ul li a {
+      font-size: 16px;
+      color: #fff;
+      margin: 8px 0;
+      text-decoration: none;
+      transition: all 0.4s ease;
+    }
+    .footer-column p:hover, .footer-column ul li a:hover {
+      color: #FFE4E1;
+      transform: translateX(10px);
+      text-shadow: 0 0 8px rgba(255, 228, 225, 0.8);
+    }
+    .footer-social {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .footer-social img {
+      width: 32px;
+      margin: 10px;
+      transition: transform 0.5s ease, filter 0.5s ease;
+    }
+    .footer-social img:hover {
+      transform: scale(1.4) rotate(20deg);
+      filter: drop-shadow(0 0 8px rgba(237, 100, 166, 0.9));
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .main-content {
+        padding-top: calc(var(--navbar-height) + 15px);
+        padding-bottom: 15px;
+        padding-left: 15px;
+        padding-right: 15px;
+      }
+      .login-container {
+        padding: 20px;
+        max-width: 90%;
+      }
+      .login-container h2 {
+        font-size: 24px;
+      }
+      .input-group label {
+        font-size: 14px;
+      }
+      .input-group input {
+        padding: 10px;
+        font-size: 14px;
+      }
+      .login-btn {
+        padding: 12px;
+        font-size: 16px;
+      }
+      .nav-left a, .nav-right a {
+        margin: 0 15px;
+        font-size: 14px;
+      }
+      .logo img {
+        width: 50px;
+      }
+      .footer-container {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+      .social-icons {
+        gap: 10px;
+      }
+      .social-icons a {
+        font-size: 20px;
+      }
+      .toggle-password {
+        right: 10px;
+      }
+      .toggle-password img {
+        width: 18px;
+        height: 18px;
+      }
+    }
+
+    /* Spark Animation for Buttons */
+    .spark {
+      animation: sparkMove 0.5s ease forwards;
+    }
+    @keyframes sparkMove {
+      0% { transform: translate(0, 0); opacity: 1; }
+      100% { transform: translate(calc((var(--rand-x, 0) * 50px)), calc((var(--rand-y, 0) * 50px))) scale(2); opacity: 0; }
+    }
+
+    /* Reduced Motion Fallback */
+    @media (prefers-reduced-motion: reduce) {
+      .bg-image,
+      .login-btn,
+      .nav-left a,
+      .nav-right a,
+      .footer-column,
+      .sparkle,
+      .spark,
+      .logo img,
+      .login-container,
+      .input-group {
+        animation: none !important;
+        transition: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+<!-- Background Slideshow -->
+<div id="background-slideshow"></div>
+
+<!-- Preloader -->
+<div id="preloader">
+  <div class="loader"></div>
+</div>
+
+<!-- Navbar -->
+<nav>
+  <div class="nav-left">
+    <a href="index.jsp" class="logo" aria-label="Parklot home page"><img src="https://img.icons8.com/ios-filled/50/ffffff/car.png" alt="Parklot Logo" loading="lazy"></a>
+    <a href="index.jsp" aria-label="Home page">Home</a>
+    <a href="login.html" aria-label="Register page">Register Vehicle</a>
+    <a href="login.html" aria-label="Check availability">Availability</a>
+    <a href="login.html" aria-label="Book a parking spot">Booking</a>
+    <a href="login.html" aria-label="Provide feedback">Feedback</a>
+    <a href="login.html" aria-label="All feedback">My Feedbacks</a>
+  </div>
+  <div class="nav-right">
+    <a href="Signup.html" id="signup-btn">Sign Up</a>
+    <a href="login.html" id="signin-btn">Sign In</a>
+  </div>
+</nav>
+
+<!-- Main Content -->
+<div class="main-content">
+  <div class="login-container">
+    <h2>Login to Parklot</h2>
+    <div id="message" class="message" style="display: none;"></div>
+
+    <form id="loginForm" action="login" method="post" aria-label="Login Form">
+      <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" id="csrfInput" />
+
+      <div class="input-group" style="--i: 1">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" placeholder="Enter your username" required aria-required="true">
+      </div>
+
+      <div class="input-group relative" style="--i: 2">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" placeholder="Enter your password" required aria-required="true">
+        <span class="toggle-password" data-target="password" tabindex="0" role="button" aria-label="Toggle password visibility">
+          <img src="https://img.icons8.com/ios-glyphs/30/000000/visible.png" alt="Show Password">
+        </span>
+      </div>
+
+      <p class="admin-toggle" style="cursor:pointer; margin-top:1em; color:#F6E05E;">
+        For admin purpose ↓
+      </p>
+      <div id="admin-code-group" class="input-group" style="--i: 3; display:none;">
+        <label for="admin-code">Admin Code</label>
+        <input type="password" id="admin-code" name="adminCode" placeholder="Enter admin code">
+        <span class="toggle-password" data-target="admin-code" tabindex="0" role="button" aria-label="Toggle password visibility">
+          <img src="https://img.icons8.com/ios-glyphs/30/000000/visible.png" alt="Show Password">
+        </span>
+      </div>
+
+      <button type="submit" id="loginBtn" class="login-btn" style="--i: 4" aria-label="Login">
+        <span>Login</span><div class="spinner"></div>
+      </button>
+    </form>
+
+    <p class="signup-link" style="margin-top:1em;">
+      Don't have an account? <a href="Signup.html">Sign Up</a>
+    </p>
+  </div>
+</div>
+
+<!-- Footer -->
+<footer class="footer" role="contentinfo">
+  <div class="footer-container">
+    <div class="footer-column">
+      <h3>Quick Links</h3>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="login.html" id="footer-booking">Booking</a></li>
+        <li><a href="login.html">Availability</a></li>
+        <li><a href="login.html">Contact Us</a></li>
+      </ul>
+    </div>
+    <div class="footer-column">
+      <h3>Locations</h3>
+      <p>City Center Parking</p>
+      <p>Airport Parking</p>
+      <p>Mall Parking</p>
+      <p>Residential Parking</p>
+    </div>
+    <div class="footer-column">
+      <h3>Customer Support</h3>
+      <p>📞 +94 76 228 2585</p>
+      <p>✉️ <a href="mailto:support@parklot.com">support@parklot.com</a></p>
+      <p>📍 123 Parking St, Colombo, SL</p>
+    </div>
+    <div class="footer-column footer-social">
+      <h3>Stay Connected</h3>
+      <div>
+        <a href="https://www.facebook.com"><img src="https://img.icons8.com/ios-filled/35/ffffff/facebook-new.png" alt="Facebook" loading="lazy"></a>
+        <a href="https://www.youtube.com"><img src="https://img.icons8.com/ios-filled/35/ffffff/youtube-play.png" alt="YouTube" loading="lazy"></a>
+        <a href="https://www.instagram.com"><img src="https://img.icons8.com/ios-filled/35/ffffff/instagram-new.png" alt="Instagram" loading="lazy"></a>
+        <a href="https://x.com"><img src="https://img.icons8.com/ios-filled/35/ffffff/twitter.png" alt="Twitter" loading="lazy"></a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Throttle function
+  function throttle(fn, wait) {
+    let lastTime = 0;
+    return function (...args) {
+      const now = performance.now();
+      if (now - lastTime >= wait) {
+        lastTime = now;
+        fn(...args);
+      }
+    };
+  }
+
+  // Adjust main-content padding based on navbar height
+  function adjustMainContentPadding() {
+    const nav = document.querySelector('nav');
+    const navHeight = nav.offsetHeight;
+    document.documentElement.style.setProperty('--navbar-height', `${navHeight}px`);
+  }
+
+  // Run on load and resize
+  window.addEventListener('load', adjustMainContentPadding);
+  window.addEventListener('resize', adjustMainContentPadding);
+
+  // Background Slideshow
+  const images = [
+    'https://images.unsplash.com/photo-1610647752706-3bb12232b3ab?q=80&w=1450&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    'https://images.unsplash.com/photo-1485463611174-f302f6a5c1c9?q=80&w=1476&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    'https://images.unsplash.com/photo-1485291571150-772bcfc10da5?q=80&w=1528&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    'https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    'https://plus.unsplash.com/premium_photo-1661902046698-40bba703f396?q=80&w=1471&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    'https://images.unsplash.com/photo-1506521781263-d8422e82f27a?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    'https://plus.unsplash.com/premium_photo-1661916866784-cdea580d93f7?q=80&w=1471&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fHVufDB8fHx8fA%3D%3D',
+    'https://images.unsplash.com/photo-1612917231506-a0825d1bc76d?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
+  ];
+  const slideshow = document.getElementById('background-slideshow');
+  let currentIndex = 0;
+
+  // Sparkle pool
+  const sparklePool = [];
+  const maxSparks = 5;
+
+  function initSparklePool() {
+    for (let i = 0; i < maxSparks; i++) {
+      const spark = document.createElement('div');
+      spark.classList.add('sparkle');
+      spark.style.display = 'none';
+      slideshow.appendChild(spark);
+      sparklePool.push(spark);
+    }
+  }
+
+  function showSparkle(x, y) {
+    const spark = sparklePool.find(s => s.style.display === 'none');
+    if (!spark) return;
+
+    spark.style.left = `${x}%`;
+    spark.style.top = `${y}%`;
+    spark.style.display = 'block';
+
+    setTimeout(() => {
+      spark.style.display = 'none';
+    }, 1000);
+  }
+
+  function loadBackgroundImages() {
+    images.forEach((src, index) => {
+      const div = document.createElement('div');
+      div.classList.add('bg-image');
+      const img = new Image();
+      img.src = src;
+      img.onload = () => {
+        div.style.backgroundImage = `url(${src})`;
+        if (index === 0) div.classList.add('active');
+        slideshow.appendChild(div);
+        console.log(`Loaded image: ${src}`);
+      };
+      img.onerror = () => {
+        console.error(`Failed to load image: ${src}`);
+        div.style.backgroundImage = `url('https://via.placeholder.com/1920x1080?text=Image+${index+1}')`;
+        if (index === 0) div.classList.add('active');
+        slideshow.appendChild(div);
+      };
+    });
+  }
+
+  function changeBackground() {
+    const bgImages = document.querySelectorAll('.bg-image');
+    if (!bgImages.length) {
+      console.error('No background images found!');
+      return;
+    }
+    bgImages[currentIndex].classList.remove('active');
+    currentIndex = (currentIndex + 1) % bgImages.length;
+    bgImages[currentIndex].classList.add('active');
+
+    for (let i = 0; i < 3; i++) {
+      showSparkle(Math.random() * 100, Math.random() * 100);
+    }
+  }
+
+  // Initialize slideshow
+  initSparklePool();
+  loadBackgroundImages();
+  setInterval(changeBackground, 6000);
+
+  // Preloader
+  window.addEventListener('load', () => {
+    const preloader = document.getElementById('preloader');
+    preloader.classList.add('hide');
+    setTimeout(() => preloader.remove(), 800);
+  });
+
+  // Navbar Scroll Effect
+  window.addEventListener('scroll', throttle(() => {
+    const nav = document.querySelector('nav');
+    nav.classList.toggle('scrolled', window.scrollY > 50);
+  }, 100));
+
+  // Display Success/Error Messages
+  window.addEventListener('load', () => {
+    const messageDiv = document.getElementById('message');
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const success = urlParams.get('success');
+      const error = urlParams.get('error');
+
+      if (success) {
+        messageDiv.textContent = decodeURIComponent(success);
+        messageDiv.classList.add('success');
+        messageDiv.style.display = 'block';
+      } else if (error) {
+        messageDiv.textContent = decodeURIComponent(error);
+        messageDiv.classList.add('error');
+        messageDiv.style.display = 'block';
+      }
+    } catch (e) {
+      console.error('Error parsing query parameters:', e);
+      messageDiv.textContent = 'An error occurred while processing the request.';
+      messageDiv.classList.add('error');
+      messageDiv.style.display = 'block';
+    }
+  });
+
+  // Sanitize CSRF Token
+  document.addEventListener('DOMContentLoaded', () => {
+    const csrfInput = document.getElementById('csrfInput');
+    if (csrfInput && !/^[a-zA-Z0-9\-_]+$/.test(csrfInput.value)) {
+      console.warn('Invalid CSRF token detected. Clearing token.');
+      csrfInput.value = '';
+    }
+  });
+
+  // Client-Side Form Validation
+  document.getElementById('loginForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    const adminCode = document.getElementById('admin-code').value;
+    const messageDiv = document.getElementById('message');
+    const loginBtn = document.querySelector('.login-btn');
+
+    if (!username || !password) {
+      messageDiv.textContent = 'Please enter both username and password.';
+      messageDiv.classList.add('error');
+      messageDiv.style.display = 'block';
+      return;
+    }
+
+    if (adminMode && !adminCode) {
+      messageDiv.textContent = 'Please enter the admin code.';
+      messageDiv.classList.add('error');
+      messageDiv.style.display = 'block';
+      return;
+    }
+
+    loginBtn.disabled = true;
+    loginBtn.classList.add('loading');
+
+    // Encode form inputs
+    const inputs = this.querySelectorAll('input');
+    inputs.forEach(input => {
+      if (input.type !== 'submit' && input.type !== 'hidden') {
+        input.value = encodeURIComponent(input.value);
+      }
+    });
+
+    setTimeout(() => {
+      this.submit();
+    }, 200);
+  });
+
+  // Navigation Redirects
+  const navLinks = document.querySelectorAll('nav a, .footer-column ul li a');
+  navLinks.forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (link.id === 'nav-booking' || link.id === 'footer-booking') {
+        e.preventDefault();
+        window.location.href = 'login.html';
+      } else if (link.id === 'signup-btn') {
+        e.preventDefault();
+        window.location.href = 'Signup.html';
+      } else if (link.id === 'signin-btn') {
+        e.preventDefault();
+        window.location.href = 'login.html';
+      }
+    });
+  });
+
+  // Footer Animation
+  const footer = document.querySelector('.footer');
+  const footerObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        document.querySelectorAll('.footer-column').forEach((col, i) => {
+          col.classList.add('visible');
+          col.style.transitionDelay = `${i * 0.3}s`;
+        });
+        footerObserver.unobserve(footer);
+      }
+    });
+  }, { threshold: 0.2 });
+
+  footerObserver.observe(footer);
+
+  // Spark Effect on Buttons
+  document.querySelectorAll('#signup-btn, #signin-btn, .login-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      for (let i = 0; i < 2; i++) {
+        const spark = document.createElement('div');
+        spark.classList.add('spark');
+        spark.style.position = 'absolute';
+        spark.style.left = `${e.offsetX}px`;
+        spark.style.top = `${e.offsetY}px`;
+        spark.style.width = '6px';
+        spark.style.height = '6px';
+        spark.style.background = 'rgba(237, 100, 166, 0.9)';
+        spark.style.borderRadius = '50%';
+        spark.style.pointerEvents = 'none';
+        spark.style.setProperty('--rand-x', Math.random() - 0.5);
+        spark.style.setProperty('--rand-y', Math.random() - 0.5);
+        btn.appendChild(spark);
+
+        setTimeout(() => spark.remove(), 500);
+      }
+    });
+  });
+
+  // Password Visibility Toggle
+  document.querySelectorAll('.toggle-password').forEach(toggle => {
+    toggle.addEventListener('click', (e) => {
+      e.preventDefault();
+      const targetId = toggle.getAttribute('data-target');
+      const input = document.getElementById(targetId);
+      const icon = toggle.querySelector('img');
+
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.src = 'https://img.icons8.com/ios-glyphs/30/000000/hide.png';
+        icon.alt = 'Hide Password';
+      } else {
+        input.type = 'password';
+        icon.src = 'https://img.icons8.com/ios-glyphs/30/000000/visible.png';
+        icon.alt = 'Show Password';
+      }
+      input.focus();
+      input.blur();
+    });
+
+    toggle.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        toggle.click();
+      }
+    });
+  });
+
+  // Admin Toggle and Form Submission Logic
+  const form = document.getElementById('loginForm');
+  const adminToggle = document.querySelector('.admin-toggle');
+  const adminCodeGroup = document.getElementById('admin-code-group');
+  let adminMode = false;
+
+  if (adminToggle) {
+    adminToggle.addEventListener('click', () => {
+      try {
+        adminMode = !adminMode;
+        adminCodeGroup.style.display = adminMode ? 'block' : 'none';
+        console.log(`Admin mode toggled: ${adminMode}`);
+      } catch (e) {
+        console.error('Error toggling admin mode:', e);
+      }
+    });
+  } else {
+    console.error('Admin toggle element not found');
+  }
+
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    form.action = adminMode ? 'adminLogin' : 'userLogin';
+    console.log(`Form action set to: ${form.action}`);
+    form.submit();
+  });
+</script>
+</body>
+</html>

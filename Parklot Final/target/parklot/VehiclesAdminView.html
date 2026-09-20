@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Manage vehicles in Parklot system.">
+    <meta name="keywords" content="vehicle management, Parklot, admin">
+    <title>Vehicle List - Parklot Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kaushan+Script&family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body, html {
+            font-family: 'Poppins', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            background: linear-gradient(45deg, #6B46C1, #ED64A6, #F6E05E);
+            background-image: url('https://images.unsplash.com/photo-1502161254066-6c74afbf07aa?q=80&w=1471&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }
+
+        /* Background Slideshow */
+        #background-slideshow {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+            isolation: isolate;
+        }
+        .bg-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            opacity: 0;
+            transform: scale(1.2) rotate(0.5deg);
+            transition: opacity 3s ease;
+            will-change: transform, opacity;
+            filter: brightness(0.9);
+        }
+        .bg-image.active {
+            opacity: 1;
+            transform: scale(1) rotate(0deg);
+        }
+        .bg-image.parallax {
+            transition: transform 0.1s ease;
+        }
+        .bg-image::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, transparent, rgba(0, 0, 0, 0.3));
+            opacity: 0.7;
+        }
+        .sparkle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: radial-gradient(circle, rgba(255, 215, 0, 0.9), transparent);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: sparkleFade 1.5s ease forwards;
+        }
+        @keyframes sparkleFade {
+            0% { opacity: 1; transform: scale(1); }
+            100% { opacity: 0; transform: scale(2) translateY(-50px); }
+        }
+
+        /* Preloader */
+        #preloader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #EFCA29, #00D2FA, #972826);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.8s ease;
+        }
+        #preloader.hide {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .loader {
+            width: 80px;
+            height: 80px;
+            border: 10px solid #fff;
+            border-top: 10px solid #EFCA29;
+            border-radius: 50%;
+            animation: spin 1.2s linear infinite, pulseGlow 2s infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 10px rgba(239, 202, 41, 0.5); }
+            50% { box-shadow: 0 0 30px rgba(239, 202, 41, 1); }
+        }
+
+        /* Sidebar CSS */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 80px;
+            height: 100%;
+            background: linear-gradient(45deg, #6B46C1, #ED64A6, #F6E05E);
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 20px;
+            z-index: 1000;
+            transition: width 0.3s ease;
+            overflow: hidden;
+        }
+        .sidebar:hover {
+            width: 240px;
+        }
+        .sidebar .logo img {
+            width: 60px;
+            margin-bottom: 48px;
+            transition: transform 0.6s ease;
+        }
+        .sidebar .logo img:hover {
+            transform: rotate(360deg) scale(1.3);
+        }
+        .sidebar-link {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 0;
+            color: #fff;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            font-weight: normal;
+        }
+        .sidebar-link img {
+            width: 24px;
+            height: 24px;
+            margin-right: 0;
+            transition: margin 0.3s ease;
+            flex-shrink: 0;
+        }
+        .link-text {
+            display: none;
+            opacity: 0;
+            margin-left: 15px;
+            white-space: nowrap;
+            transition: opacity 0.3s ease;
+            font-size: 1rem;
+            font-weight: normal;
+        }
+        .sidebar-link:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        .sidebar:hover .sidebar-link {
+            justify-content: flex-start;
+            padding-left: 20px;
+        }
+        .sidebar:hover .sidebar-link img {
+            margin-right: 15px;
+        }
+        .sidebar:hover .link-text {
+            display: inline-block;
+            opacity: 1;
+        }
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 60px;
+            }
+            .sidebar:hover {
+                width: 200px;
+            }
+            .sidebar .logo img {
+                width: 50px;
+            }
+        }
+
+        /* Vehicle List Section */
+        .management-section {
+            padding: 120px 20px 60px;
+            text-align: center;
+            position: relative;
+            z-index: 2;
+        }
+        .management-section h2 {
+            font-size: 36px;
+            color: #F6E05E;
+            font-family: 'Kaushan Script', sans-serif;
+            margin-bottom: 40px;
+            text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5);
+        }
+        .vehicle-table {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.12);
+            padding: 20px;
+            border-radius: 25px;
+            backdrop-filter: blur(15px);
+            border: 2px solid rgba(237, 100, 166, 0.3);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            color: #fff;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        th {
+            background: rgba(237, 100, 166, 0.3);
+            font-weight: 600;
+        }
+        td {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .action-btn {
+            padding: 8px 15px;
+            margin: 5px;
+            border: none;
+            border-radius: 15px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .update-btn {
+            background: linear-gradient(45deg, #F6E05E, #ED64A6);
+            color: #1A1A15;
+        }
+        .update-btn:hover {
+            background: linear-gradient(45deg, #ED64A6, #F6E05E);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 10px rgba(237, 100, 166, 0.6);
+        }
+        .delete-btn {
+            background: linear-gradient(45deg, #FF6B6B, #DC2626);
+            color: #fff;
+        }
+        .delete-btn:hover {
+            background: linear-gradient(45deg, #DC2626, #FF6B6B);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 10px rgba(255, 107, 107, 0.6);
+        }
+        .error-message, .success-message {
+            max-width: 1000px;
+            margin: 20px auto;
+            padding: 15px;
+            border-radius: 10px;
+            backdrop-filter: blur(15px);
+            text-align: center;
+        }
+        .error-message {
+            background: rgba(255, 107, 107, 0.3);
+            color: #FF6B6B;
+        }
+        .success-message {
+            background: rgba(74, 222, 128, 0.3);
+            color: #4ADE80;
+        }
+
+        /* Modal for Update Form */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1001;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: rgba(255, 255, 255, 0.12);
+            padding: 30px;
+            border-radius: 25px;
+            backdrop-filter: blur(15px);
+            border: 2px solid rgba(237, 100, 166, 0.3);
+            max-width: 500px;
+            width: 90%;
+            color: #fff;
+        }
+        .modal-content h3 {
+            font-size: 24px;
+            color: #F6E05E;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .modal-content label {
+            display: block;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+        .modal-content input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: none;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+            font-size: 16px;
+        }
+        .modal-content input:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.3);
+        }
+        .modal-content select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: none;
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.5); /* Darker background for contrast */
+            color: #fff; /* White text */
+            font-size: 16px;
+            appearance: none; /* Remove default dropdown arrow */
+            background-image: url('data:image/svg+xml;utf8,<svg fill="white" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>'); /* Custom arrow */
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+        }
+        .modal-content select option {
+            background: #333; /* Dark background for options */
+            color: #fff; /* White text for options */
+        }
+        .modal-content select:focus {
+            outline: none;
+            background: rgba(0, 0, 0, 0.6); /* Slightly lighter on focus */
+        }
+        .modal-content button {
+            padding: 10px 20px;
+            background: linear-gradient(45deg, #ED64A6, #F6E05E);
+            color: #1A1A15;
+            border: none;
+            border-radius: 15px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .modal-content button:hover {
+            background: linear-gradient(45deg, #F6E05E, #ED64A6);
+            transform: translateY(-2px);
+        }
+        .modal-content .close-btn {
+            background: linear-gradient(45deg, #FF6B6B, #DC2626);
+            color: #fff;
+        }
+        .modal-content .close-btn:hover {
+            background: linear-gradient(45deg, #DC2626, #FF6B6B);
+        }
+
+        /* Footer CSS */
+        .footer {
+            padding: 40px 20px;
+            background: linear-gradient(45deg, #6B46C1, #ED64A6, #F6E05E);
+            position: relative;
+            overflow: hidden;
+            border-radius: 0px;
+            backdrop-filter: blur(12px);
+            margin-left: 80px;
+            transition: margin-left 0.3s ease;
+        }
+        .sidebar:hover ~ .footer {
+            margin-left: 240px;
+        }
+        .footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(237, 100, 166, 0.2), transparent);
+            opacity: 0;
+            transition: opacity 0.6s ease;
+        }
+        .footer:hover::before {
+            opacity: 1;
+        }
+        .footer-container {
+            max-width: 1300px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .footer-column h3 {
+            font-size: 20px;
+            font-family: 'Kaushan Script', sans-serif;
+            color: #F6E05E;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5);
+        }
+        .footer-column p, .footer-column ul li a {
+            font-size: 16px;
+            color: #fff;
+            margin: 8px 0;
+            text-decoration: none;
+            transition: all 0.4s ease;
+        }
+        .footer-column p:hover, .footer-column ul li a:hover {
+            color: #FFE4E1;
+            transform: translateX(10px);
+            text-shadow: 0 0 8px rgba(255, 228, 225, 0.8);
+        }
+        .footer-social {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .footer-social img {
+            width: 32px;
+            margin: 10px;
+            transition: transform 0.5s ease, filter 0.5s ease;
+        }
+        .footer-social img:hover {
+            transform: scale(1.4) rotate(20deg);
+            filter: drop-shadow(0 0 8px rgba(237, 100, 166, 0.9));
+        }
+        @media (max-width: 768px) {
+            .footer {
+                margin-left: 60px;
+            }
+            .sidebar:hover ~ .footer {
+                margin-left: 200px;
+            }
+            .footer-container {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+            .footer-social {
+                flex-direction: row;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- Background Slideshow -->
+<div id="background-slideshow"></div>
+
+<!-- Preloader -->
+<div id="preloader">
+    <div class="loader"></div>
+</div>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+    <div class="logo"><img src="https://img.icons8.com/ios-filled/50/ffffff/car.png" alt="Logo"></div>
+    <a href="adminDashboard.jsp" class="sidebar-link"><img src="https://img.icons8.com/ios-filled/50/ffffff/home.png"/><span class="link-text">Home</span></a>
+
+    <a href="<%= request.getContextPath() %>/userList.jsp" class="sidebar-link"><img src="https://img.icons8.com/ios-filled/50/ffffff/user.png"/><span class="link-text">User manager</span></a>
+    <a href="AvailabiltyAdmin.html" class="sidebar-link"><img src="https://img.icons8.com/ios-filled/50/ffffff/parking.png"/><span class="link-text">Slot Manager</span></a>
+
+    <a href="AdminBooking.html" class="sidebar-link"><img src="https://img.icons8.com/ios-filled/50/ffffff/calendar.png"/><span class="link-text">Bookings</span></a>
+    <a href="AdminBookingHistory.html"class="sidebar-link">
+        <img src="https://img.icons8.com/ios-filled/50/ffffff/time-machine.png" alt="">
+        <span class="link-text">Booking History</span>
+        <a href="searchVehicle.html" class="sidebar-link">
+            <img src="https://img.icons8.com/ios-filled/50/ffffff/search.png" alt="Search Icon">
+            <span class="link-text">Search Vehicles</span>
+        </a>
+        <a href="VehiclesAdminView.html" class="sidebar-link">
+            <img src="https://img.icons8.com/ios-filled/50/ffffff/car.png" alt="Car Icon">
+            <span class="link-text">Registered Vehicles</span>
+        </a>
+    </a>
+
+    <a href="admin_review.jsp" class="sidebar-link"><img src="https://img.icons8.com/ios-filled/50/ffffff/feedback.png"/><span class="link-text">Feedback manager</span></a>
+    <a href="settings.jsp" class="sidebar-link"><img src="https://img.icons8.com/ios-filled/50/ffffff/settings.png"/><span class="link-text">Settings</span></a>
+    <a href="<%= request.getContextPath() %>/logout" id="logout-btn" class="sidebar-link"><img src="https://img.icons8.com/ios-filled/50/ffffff/exit.png"/><span class="link-text">Log Out</span></a>
+</aside>
+
+<!-- Vehicle List Section -->
+<section id="vehicle-list" class="management-section">
+    <h2>Vehicle Management</h2>
+    <div class="vehicle-table">
+        <table>
+            <thead>
+            <tr>
+                <th>Vehicle Type</th>
+                <th>License Plate</th>
+                <th>Owner</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody id="vehicleTableBody">
+            <!-- Vehicle data will be populated here -->
+            </tbody>
+        </table>
+    </div>
+    <div id="message"></div>
+</section>
+
+<!-- Update Vehicle Modal -->
+<div id="updateModal" class="modal">
+    <div class="modal-content">
+        <h3>Update Vehicle</h3>
+        <form id="updateForm">
+            <label for="updateOriginalLicensePlate">Original License Plate:</label>
+            <input type="text" id="updateOriginalLicensePlate" name="originalLicensePlate" readonly>
+            <label for="updateLicensePlate">New License Plate:</label>
+            <input type="text" id="updateLicensePlate" name="licensePlate" required>
+            <label for="updateVehicleType">Vehicle Type:</label>
+            <select id="updateVehicleType" name="vehicleType" required>
+                <option value="Car">Car</option>
+                <option value="Van">Van</option>
+                <option value="Truck">Truck</option>
+                <option value="Motorcycle">Motorcycle</option>
+            </select>
+            <label for="updateOwner">Owner:</label>
+            <input type="text" id="updateOwner" name="owner" required>
+            <button type="submit">Update Vehicle</button>
+            <button type="button" class="close-btn">Cancel</button>
+        </form>
+    </div>
+</div>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="footer-container">
+        <div class="footer-column">
+            <h3>Quick Links</h3>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="UserBooking.html" id="footer-booking">Booking</a></li>
+                <li><a href="/admin/availability">Availability</a></li>
+                <li><a href="login.html">Contact Us</a></li>
+                <li><a href="adminFeedback.html">Feedback</a></li>
+            </ul>
+        </div>
+        <div class="footer-column">
+            <h3>Locations</h3>
+            <p>City Center Parking</p>
+            <p>Airport Parking</p>
+            <p>Mall Parking</p>
+            <p>Residential Parking</p>
+        </div>
+        <div class="footer-column">
+            <h3>Customer Support</h3>
+            <p>📞 +94 76 228 2585</p>
+            <p>✉️ GR5@gmail.com</p>
+            <p>📍 123 Parking St, Colombo, SL</p>
+        </div>
+        <div class="footer-column footer-social">
+            <h3>Stay Connected</h3>
+            <div>
+                <a href="https://www.facebook.com"><img src="https://img.icons8.com/ios-filled/35/ffffff/facebook-new.png" alt="Facebook" loading="lazy"></a>
+                <a href="https://www.youtube.com"><img src="https://img.icons8.com/ios-filled/35/ffffff/youtube-play.png" alt="YouTube" loading="lazy"></a>
+                <a href="https://www.instagram.com"><img src="https://img.icons8.com/ios-filled/35/ffffff/instagram-new.png" alt="Instagram" loading="lazy"></a>
+                <a href="https://x.com"><img src="https://img.icons8.com/ios-filled/35/ffffff/twitter.png" alt="Twitter" loading="lazy"></a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<script type="text/javascript">
+    var gk_isXlsx = false;
+    var gk_xlsxFileLookup = {};
+    var gk_fileData = {};
+    function filledCell(cell) {
+        return cell !== '' && cell != null;
+    }
+    function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                    row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                    headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex));
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+    }
+
+    // Background Slideshow
+    const images = [
+        'https://images.unsplash.com/photo-1610647752706-3bb12232b3ab',
+        'https://images.unsplash.com/photo-1485463611174-f302f6a5c1c9',
+        'https://images.unsplash.com/photo-1485291571150-772bcfc10da5',
+        'https://images.unsplash.com/photo-1449965408869-eaa3f722e40d',
+        'https://plus.unsplash.com/premium_photo-1661902046698-40bba703édia580d93f7',
+        'https://images.unsplash.com/photo-1612917231506-a0825d1bc76d'
+    ];
+    const slideshow = document.getElementById('background-slideshow');
+    let currentIndex = 0;
+
+    images.forEach((src, index) => {
+        const div = document.createElement('div');
+        div.classList.add('bg-image');
+        const img = new Image();
+        img.src = src;
+        img.onload = () => {
+            div.style.backgroundImage = `url(${src})`;
+            if (index === 0) div.classList.add('active');
+            slideshow.appendChild(div);
+        };
+        img.onerror = () => {
+            div.style.backgroundImage = `url('/images/fallback.jpg')`;
+            if (index === 0) div.classList.add('active');
+            slideshow.appendChild(div);
+        };
+    });
+
+    function changeBackground() {
+        const images = document.querySelectorAll('.bg-image');
+        if (images.length) {
+            images[currentIndex].classList.remove('active');
+            currentIndex = (currentIndex + 1) % images.length;
+            images[currentIndex].classList.add('active');
+        }
+    }
+    setInterval(changeBackground, 6000);
+
+    // Preloader
+    window.addEventListener('load', () => {
+        const preloader = document.getElementById('preloader');
+        preloader.classList.add('hide');
+        setTimeout(() => preloader.remove(), 800);
+        loadVehicles();
+    });
+
+    // Navbar scroll effect
+    window.addEventListener('scroll', () => {
+        const nav = document.querySelector('nav');
+        if (nav) nav.classList.toggle('scrolled', window.scrollY > 50);
+    });
+
+    // Load Vehicles
+    async function loadVehicles() {
+        const vehicleTableBody = document.getElementById('vehicleTableBody');
+        const messageDiv = document.getElementById('message');
+        vehicleTableBody.innerHTML = '<tr><td colspan="4">Loading...</td></tr>';
+
+        try {
+            console.log('Fetching vehicles from /searchVehicle...');
+            const response = await fetch('/searchVehicle', {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
+
+            console.log('Response status:', response.status);
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            console.log('Response data:', data);
+
+            if (data.error) {
+                console.warn('Backend error:', data.error);
+                messageDiv.innerHTML = `<p class="error-message">${data.error}</p>`;
+                vehicleTableBody.innerHTML = '';
+                return;
+            }
+
+            if (data.length === 0) {
+                console.log('No vehicles found.');
+                vehicleTableBody.innerHTML = '<tr><td colspan="4">No vehicles registered.</td></tr>';
+                return;
+            }
+
+            vehicleTableBody.innerHTML = '';
+            data.forEach(vehicle => {
+                console.log('Processing vehicle:', vehicle);
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${vehicle.vehicleType}</td>
+                    <td>${vehicle.licensePlate}</td>
+                    <td>${vehicle.owner}</td>
+                    <td>
+                        <button class="action-btn update-btn" data-vehicle='${JSON.stringify(vehicle)}'>Update</button>
+                        <button class="action-btn delete-btn" data-license-plate="${vehicle.licensePlate}">Delete</button>
+                    </td>
+                `;
+                vehicleTableBody.appendChild(row);
+            });
+
+            // Add event listeners for update and delete buttons
+            document.querySelectorAll('.update-btn').forEach(btn => {
+                btn.addEventListener('click', openUpdateModal);
+            });
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', deleteVehicle);
+            });
+        } catch (error) {
+            console.error('Error fetching vehicles:', error);
+            messageDiv.innerHTML = `<p class="error-message">Error: ${error.message}</p>`;
+            vehicleTableBody.innerHTML = '<tr><td colspan="4">Failed to load vehicles.</td></tr>';
+        }
+    }
+
+    // Update Vehicle Modal
+    const updateModal = document.getElementById('updateModal');
+    const updateForm = document.getElementById('updateForm');
+    const closeBtn = document.querySelector('.close-btn');
+
+    function openUpdateModal(event) {
+        const vehicle = JSON.parse(event.target.dataset.vehicle);
+        document.getElementById('updateOriginalLicensePlate').value = vehicle.licensePlate;
+        document.getElementById('updateLicensePlate').value = vehicle.licensePlate;
+        document.getElementById('updateVehicleType').value = vehicle.vehicleType;
+        document.getElementById('updateOwner').value = vehicle.owner;
+        updateModal.style.display = 'flex';
+    }
+
+    closeBtn.addEventListener('click', () => {
+        updateModal.style.display = 'none';
+    });
+
+    window.addEventListener('click', (event) => {
+        if (event.target === updateModal) {
+            updateModal.style.display = 'none';
+        }
+    });
+
+    updateForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const messageDiv = document.getElementById('message');
+        const formData = new FormData(updateForm);
+        const vehicleData = {
+            originalLicensePlate: formData.get('originalLicensePlate'),
+            licensePlate: formData.get('licensePlate'),
+            vehicleType: formData.get('vehicleType'),
+            owner: formData.get('owner')
+        };
+
+        try {
+            console.log('Updating vehicle:', vehicleData);
+            const response = await fetch('/updateVehicle', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(vehicleData)
+            });
+
+            console.log('Update response status:', response.status);
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            console.log('Update response data:', result);
+            if (result.error) {
+                messageDiv.innerHTML = `<p class="error-message">${result.error}</p>`;
+            } else {
+                messageDiv.innerHTML = `<p class="success-message">Vehicle updated successfully!</p>`;
+                updateModal.style.display = 'none';
+                loadVehicles();
+            }
+        } catch (error) {
+            console.error('Error updating vehicle:', error);
+            messageDiv.innerHTML = `<p class="error-message">Error: ${error.message}</p>`;
+        }
+    });
+
+    // Delete Vehicle
+    async function deleteVehicle(event) {
+        const licensePlate = event.target.dataset.licensePlate;
+        const messageDiv = document.getElementById('message');
+        if (!confirm(`Are you sure you want to delete vehicle with license plate ${licensePlate}?`)) {
+            return;
+        }
+
+        try {
+            console.log('Deleting vehicle with license plate:', licensePlate);
+            const response = await fetch('/deleteVehicle', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ licensePlate })
+            });
+
+            console.log('Delete response status:', response.status);
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            console.log('Delete response data:', result);
+            if (result.error) {
+                messageDiv.innerHTML = `<p class="error-message">${result.error}</p>`;
+            } else {
+                messageDiv.innerHTML = `<p class="success-message">Vehicle deleted successfully!</p>`;
+                loadVehicles();
+            }
+        } catch (error) {
+            console.error('Error deleting vehicle:', error);
+            messageDiv.innerHTML = `<p class="error-message">Error: ${error.message}</p>`;
+        }
+    }
+
+    // Footer animation on scroll
+    const footer = document.querySelector('.footer');
+    const footerObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                document.querySelectorAll('.footer-column').forEach((col, i) => {
+                    col.style.opacity = '1';
+                    col.style.transform = 'translateY(0)';
+                    col.style.transition = `all 0.6s ease ${i * 0.3}s`;
+                });
+            }
+        });
+    }, { threshold: 0.2 });
+
+    document.querySelectorAll('.footer-column').forEach(col => {
+        col.style.opacity = '0';
+        col.style.transform = 'translateY(50px)';
+        footerObserver.observe(footer);
+    });
+</script>
+</body>
+</html>

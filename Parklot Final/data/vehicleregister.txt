@@ -1,0 +1,8 @@
+Car,BAU-1067,Zacky
+Car,BAU-1055,Zacky
+Van,BAU-1077,Zacky
+Car,BAU-1055,admin
+Car,AAA-123,Jazeel
+Van,AAA-123,Jazeel
+Truck,AAA-1234,Jazeel
+Truck,BAU-1111,Jazeel

@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parklot - Booking History</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kaushan+Script&family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            scroll-behavior: smooth;
+        }
+        body, html {
+            font-family: 'Poppins', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            background: url('https://images.unsplash.com/photo-1502161254066-6c74afbf07aa?q=80&w=1471&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D') center/cover fixed no-repeat;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.2);
+            z-index: -1;
+        }
+        #preloader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #EFCA29, #00D2FA, #972826);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.8s ease;
+        }
+        #preloader.hide {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .loader {
+            width: 80px;
+            height: 80px;
+            border: 10px solid #fff;
+            border-top: 10px solid #EFCA29;
+            border-radius: 50%;
+            animation: spin 1.2s linear infinite, pulseGlow 2s infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 10px rgba(239, 202, 41, 0.5); }
+            50% { box-shadow: 0 0 30px rgba(239, 202, 41, 1); }
+        }
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(45deg, #6B46C1, #ED64A6, #F6E05E);
+            backdrop-filter: blur(10px);
+            padding: 15px 40px;
+            z-index: 1000;
+            transition: all 0.5s ease;
+        }
+        nav.scrolled {
+            background: linear-gradient(45deg, #805AD5, #F687B3, #FBBF24);
+            padding: 10px 40px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+        .nav-left, .nav-right {
+            display: flex;
+            align-items: center;
+        }
+        .nav-left a, .nav-right a {
+            color: #fff;
+            text-decoration: none;
+            margin: 0 25px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        .nav-left a:hover, .nav-right a:hover {
+            color: #FFE4E1;
+            transform: translateY(-2px);
+            text-shadow: 0 0 15px rgba(255, 228, 225, 0.8);
+        }
+        .nav-left a::after, .nav-right a::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -6px;
+            left: 0;
+            background: #FFE4E1;
+            transition: width 0.4s ease;
+        }
+        .nav-left a:hover::after, .nav-right a:hover::after {
+            width: 100%;
+        }
+        .logo img {
+            width: 60px;
+            transition: transform 0.6s ease;
+            filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.5));
+        }
+        .logo img:hover {
+            transform: rotate(360deg) scale(1.3);
+        }
+        #logout-btn {
+            background: linear-gradient(45deg, #ED64A6, #F6E05E);
+            padding: 12px 25px;
+            border-radius: 30px;
+            color: #1A1A15;
+            font-weight: 700;
+            box-shadow: 0 4px 15px rgba(237, 100, 166, 0.5);
+            transition: all 0.4s ease;
+            margin: 0 15px;
+        }
+        .booking-section {
+            padding: 120px 20px 60px;
+            flex: 1 0 auto;
+            position: relative;
+        }
+        .booking-container {
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+        .welcome-section {
+            text-align: center;
+            margin-bottom: 60px;
+            animation: bounceIn 1s ease forwards;
+        }
+        @keyframes bounceIn {
+            0% { opacity: 0; transform: scale(0.8); }
+            60% { opacity: 1; transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        .welcome-section h1 {
+            font-size: 52px;
+            font-family: 'Kaushan Script', sans-serif;
+            color: #F6E05E;
+            text-shadow: 4px 4px 20px rgba(0, 0, 0, 0.5);
+            margin-bottom: 25px;
+        }
+        .table-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            color: #fff;
+        }
+        th, td {
+            padding: 12px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        th {
+            background: linear-gradient(45deg, #6B46C1, #ED64A6);
+            font-weight: 600;
+        }
+        .status-expired {
+            color: #f44336;
+        }
+        .status-active {
+            color: #4CAF50;
+        }
+        .footer {
+            padding: 40px 20px;
+            background: linear-gradient(45deg, #6B46C1, #ED64A6, #F6E05E);
+            position: relative;
+            overflow: hidden;
+            border-radius: 15px;
+            backdrop-filter: blur(12px);
+            flex-shrink: 0;
+        }
+        .footer-container {
+            max-width: 1300px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .footer-column h3 {
+            font-size: 20px;
+            font-family: 'Kaushan Script', sans-serif;
+            color: #F6E05E;
+            margin-bottom: 15px;
+        }
+        .footer-column p, .footer-column ul li a {
+            font-size: 16px;
+            color: #fff;
+            margin: 8px 0;
+            text-decoration: none;
+            transition: all 0.4s ease;
+        }
+        .footer-column p:hover, .footer-column ul li a:hover {
+            color: #FFE4E1;
+            transform: translateX(10px);
+        }
+        .footer-social img {
+            width: 32px;
+            margin: 10px;
+            transition: transform 0.5s ease, filter 0.5s ease;
+        }
+        .footer-social img:hover {
+            transform: scale(1.4) rotate(20deg);
+            filter: drop-shadow(0 0 8px rgba(237, 100, 166, 0.9));
+        }
+        @media (max-width: 768px) {
+            .welcome-section h1 { font-size: 36px; }
+            .nav-left a, .nav-right a { margin: 0 15px; font-size: 14px; }
+            .logo img { width: 50px; }
+            #logout-btn { padding: 10px 20px; font-size: 14px; }
+            .footer-container { flex-direction: column; align-items: center; text-align: center; }
+            .footer-social { flex-direction: row; justify-content: center; }
+            table { font-size: 14px; }
+            th, td { padding: 8px; }
+        }
+    </style>
+</head>
+<body>
+<!-- Preloader -->
+<div id="preloader">
+    <div class="loader"></div>
+</div>
+
+<!-- Navbar -->
+<nav>
+    <div class="nav-left">
+        <a href="dashboard.jsp" class="logo"><img src="https://img.icons8.com/ios-filled/50/ffffff/car.png" alt="Logo" loading="lazy"></a>
+        <a href="dashboard.jsp" aria-label="Home page">Home</a>
+        <a href="registerVehicle.jsp" aria-label="Register page">Register Vehicle</a>
+        <a href="AvailabilityUser.html" aria-label="Check availability">Availability</a>
+        <a href="UserBooking.html" aria-label="Book a parking spot">Booking</a>
+        <a href="UserBookingHistory.html" aria-label="View booking history">Booking History</a>
+        <a href="feedback_form.jsp" aria-label="Provide feedback">Feedback</a>
+        <a href="feedback_list.jsp" aria-label="All feedback">My Feedbacks</a>
+        <a href="profile.jsp" aria-label="View profile">My Profile</a>
+    </div>
+    <div class="nav-right">
+        <a href="index.jsp" id="logout-btn" aria-label="Log out from Parklot">Log Out</a>
+    </div>
+</nav>
+
+<!-- Booking History Section -->
+<section class="booking-section">
+    <div class="booking-container">
+        <div class="welcome-section">
+            <h1>Your Booking History</h1>
+        </div>
+        <div class="table-container">
+            <table id="bookingTable">
+                <thead>
+                <tr>
+                    <th>Booking ID</th>
+                    <th>Slot #</th>
+                    <th>Vehicle Type</th>
+                    <th>Vehicle Number</th>
+                    <th>NIC Number</th>
+                    <th>Parking Date</th>
+                    <th>Parking Time</th>
+                    <th>Duration (hours)</th>
+                    <th>Permit</th>
+                    <th>Status</th>
+                </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="footer-container">
+        <div class="footer-column">
+            <h3>Quick Links</h3>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="UserBooking.html">Booking</a></li>
+                <li><a href="/user/availability">Availability</a></li>
+                <li><a href="Feedback.html">Feedback</a></li>
+            </ul>
+        </div>
+        <div class="footer-column">
+            <h3>Locations</h3>
+            <p>City Center Parking</p>
+            <p>Airport Parking</p>
+            <p>Mall Parking</p>
+            <p>Residential Parking</p>
+        </div>
+        <div class="footer-column">
+            <h3>Customer Support</h3>
+            <p>📞 +94 76 228 2585</p>
+            <p>✉️ GR5@gmail.com</p>
+            <p>📍 123 Parking St, Colombo, SL</p>
+        </div>
+        <div class="footer-column footer-social">
+            <h3>Stay Connected</h3>
+            <div>
+                <img src="https://via.placeholder.com/35?text=FB" alt="Facebook" loading="lazy">
+                <img src="https://via.placeholder.com/35?text=YT" alt="YouTube" loading="lazy">
+                <img src="https://via.placeholder.com/35?text=IG" alt="Instagram" loading="lazy">
+                <img src="https://via.placeholder.com/35?text=TW" alt="Twitter" loading="lazy">
+            </div>
+        </div>
+    </div>
+</footer>
+
+<script>
+    // Preloader
+    window.addEventListener('load', () => {
+        const preloader = document.getElementById('preloader');
+        preloader.classList.add('hide');
+        setTimeout(() => preloader.remove(), 800);
+    });
+
+    // Navbar scroll effect
+    window.addEventListener('scroll', () => {
+        const nav = document.querySelector('nav');
+        nav.classList.toggle('scrolled', window.scrollY > 50);
+    });
+
+    // Check if booking is expired
+    function isBookingExpired(booking) {
+        const bookingDateTime = new Date(`${booking.parkingDate}T${booking.parkingTime}`);
+        const endDateTime = new Date(bookingDateTime.getTime() + booking.duration * 60 * 60 * 1000);
+        return new Date() > endDateTime;
+    }
+
+    // Update booking table
+    function updateBookingTable(bookings) {
+        const tbody = document.querySelector('#bookingTable tbody');
+        tbody.innerHTML = '';
+        bookings.forEach(booking => {
+            const isExpired = isBookingExpired(booking);
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${booking.bookingId}</td>
+                <td>${booking.slotId}</td>
+                <td>${booking.vehicleType}</td>
+                <td>${booking.vehicleNumber}</td>
+                <td>${booking.nicNumber}</td>
+                <td>${booking.parkingDate}</td>
+                <td>${booking.parkingTime}</td>
+                <td>${booking.duration}</td>
+                <td>${booking.hasHandicappedPermit ? 'Yes' : 'No'}</td>
+                <td class="${isExpired ? 'status-expired' : 'status-active'}">${isExpired ? 'Expired' : 'Active'}</td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+
+    // Fetch booking history
+    function fetchBookingHistory() {
+        fetch('/user/booking-history')
+            .then(res => {
+                if (!res.ok) throw new Error(res.status === 401 ? 'User not logged in' : 'Failed to fetch booking history');
+                return res.json();
+            })
+            .then(bookings => updateBookingTable(bookings))
+            .catch(error => {
+                console.error('Error fetching booking history:', error);
+                alert(error.message);
+                if (error.message === 'User not logged in') {
+                    window.location.href = '/login.html';
+                }
+            });
+    }
+
+    // Initial fetch
+    document.addEventListener('DOMContentLoaded', fetchBookingHistory);
+</script>
+</body>
+</html>
